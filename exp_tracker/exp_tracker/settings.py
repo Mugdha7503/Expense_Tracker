@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'expenses',
     'widget_tweaks',
     'django_filters',
+    'django_htmx',
 
 
 ]
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware', 
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'exp_tracker.urls'
