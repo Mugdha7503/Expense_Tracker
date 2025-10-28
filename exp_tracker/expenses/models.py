@@ -16,8 +16,8 @@ class Category(models.Model):
 # Create your models here.
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
-        ('INCOME', 'Income'),
-        ('EXPENSE', 'Expense'),
+        ('income', 'Income'),
+        ('expense', 'Expense'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -29,3 +29,6 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.type}: {self.amount} on {self.date} by {self.user}"
+    
+    class Meta:
+        ordering = ['-date']

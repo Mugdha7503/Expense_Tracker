@@ -15,7 +15,16 @@
     Transactions List   
 </h1>
 <div class="relative overflow-x-auto text-white">
-{% if transactions %}
+<form method="GET">
+    <div class="mb-4 form-control">
+        {{ filter.form.transaction_type|add_label_class:"label text-white" }}
+        {% render_field filter.form.transaction_type class="select bg-gray-50 text-gray-900 w-full max-w-xs" %}
+    </div>
+    <button class="btn btn-success mb-4" type="submit">
+        Filter
+    </button>
+</form>
+{% if filter.qs %}
 <table class="table">
     <thead class="text-xs text-white uppercase">
         <tr>
@@ -26,11 +35,11 @@
         </tr>
     </thead>
     <tbody>
-        {% for transaction in transactions %}
+        {% for transaction in filter.qs %}
         <tr class="hover">
             <td>{{ transaction.date }}</td>
             <td>{{ transaction.category }}</td>
-            td>{{ transaction.type}}</td>
+            <td>{{ transaction.type}}</td>
             <td>${{ transaction.amount }}</td>
         </tr>
         {% endfor %}
