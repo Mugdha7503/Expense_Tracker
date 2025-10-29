@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
     pass
 
@@ -13,6 +14,23 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class TransactionQuerySet(models.QuerySet):
+    def get_expenses(self):
+        return self.filter(type='expense')
+    
+    def get_income(self):
+        return self.filter(type='income')
+    
+    def get_total_expenses(self):
+        return self.get_expenses().aggregate(
+            total=models.Sum('amount')
+        )['total'] or 0
+
+    def get_total_income(self):
+        return self.get_income().aggregate(
+            total=models.Sum('amount')
+        )['total'] or 0
+    
 # Create your models here.
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
@@ -27,8 +45,13 @@ class Transaction(models.Model):
     date = models.DateField()
     description = models.TextField(blank=True, null=True)
 
+    objects = TransactionQuerySet.as_manager()
+    
     def __str__(self):
         return f"{self.type}: {self.amount} on {self.date} by {self.user}"
     
     class Meta:
         ordering = ['-date']
+    
+   
+

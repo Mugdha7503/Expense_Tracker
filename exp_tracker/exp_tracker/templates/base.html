@@ -28,7 +28,7 @@
 
     {% endblock %}
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
     {% include 'expenses/partial/navbar.html' %}
 

@@ -1,6 +1,7 @@
 # yourapp/forms.py
 from allauth.account.forms import SignupForm
 from django import forms
+from expenses.models import Transaction, Category
 
 class CustomSignupForm(SignupForm):
     first_name = forms.CharField(max_length=30, label='First Name')
@@ -12,3 +13,29 @@ class CustomSignupForm(SignupForm):
         user.last_name = self.cleaned_data['last_name']
         user.save()
         return user
+
+
+class TransactionForm(forms.ModelForm):
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.RadioSelect()
+    )
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount <= 0:
+            raise forms.ValidationError("Amount must be greater than zero.")
+        return amount
+
+    class Meta:
+        model = Transaction
+        fields = (
+            'type',
+            'amount',
+            'date',
+            'category',       
+        )
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'})
+        }
+
+        
