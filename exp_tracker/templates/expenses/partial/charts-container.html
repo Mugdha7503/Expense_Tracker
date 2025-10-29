@@ -1,0 +1,81 @@
+{% load widget_tweaks %}
+
+<div class="flex flex-col-reverse md:grid md:grid-cols-4 md:gap-4" id="charts-container">
+  <div class="col-span-3 space-y-6">
+    <!-- Pie Chart -->
+    <div class="bg-gray-900 p-4 rounded-lg shadow">
+      <h2 class="text-white mb-2 text-lg font-semibold">Expenses by Category (Current Month)</h2>
+      <canvas id="categoryPieChart"></canvas>
+    </div>
+
+    <!-- Line Chart -->
+    <div class="bg-gray-900 p-4 rounded-lg shadow">
+      <h2 class="text-white mb-2 text-lg font-semibold">Expenses Over Time</h2>
+      <canvas id="expenseLineChart"></canvas>
+    </div>
+  </div>
+
+  <div class="col-span-1">
+    <form hx-get="{% url 'transactions-charts' %}" hx-target="#charts-container" hx-swap="outerHTML">
+      <div class="mb-4 form-control">
+        {{ filter.form.transaction_type|add_label_class:"label text-white" }}
+        {% render_field filter.form.transaction_type class="select bg-gray-50 text-gray-900 w-full max-w-xs" %}
+      </div>
+
+      <div class="mb-2 form-control">
+        {{ filter.form.start_date|add_label_class:"label text-white" }}
+        {% render_field filter.form.start_date class="input bg-gray-50 text-gray-900" %}
+      </div>
+
+      <div class="mb-2 form-control">
+        {{ filter.form.end_date|add_label_class:"label text-white" }}
+        {% render_field filter.form.end_date class="input bg-gray-50 text-gray-900" %}
+      </div>
+
+      <div class="mb-4 form-control">
+        {% render_field filter.form.category class="text-green-500 border-gray-300 rounded focus:ring-green-500" %}
+      </div>
+
+      <button class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded shadow" type="submit">
+        Filter
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const pieLabels = JSON.parse('{{ pie_labels|safe|escapejs }}');
+    const pieValues = JSON.parse('{{ pie_values|safe|escapejs }}');
+    const lineLabels = JSON.parse('{{ line_labels|safe|escapejs }}');
+    const lineValues = JSON.parse('{{ line_values|safe|escapejs }}');
+
+    new Chart(document.getElementById('categoryPieChart'), {
+      type: 'pie',
+      data: {
+        labels: pieLabels,
+        datasets: [{
+          data: pieValues,
+          backgroundColor: [
+            '#4ADE80', '#60A5FA', '#FBBF24', '#F87171', '#A78BFA', '#F472B6'
+          ],
+        }]
+      },
+    });
+
+    new Chart(document.getElementById('expenseLineChart'), {
+      type: 'line',
+      data: {
+        labels: lineLabels,
+        datasets: [{
+          label: 'Total Expenses',
+          data: lineValues,
+          borderColor: '#4ADE80',
+          tension: 0.3,
+          fill: true,
+          backgroundColor: 'rgba(74, 222, 128, 0.2)',
+        }]
+      },
+    });
+  });
+</script>

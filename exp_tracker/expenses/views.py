@@ -5,6 +5,10 @@ from expenses.models import Transaction
 from expenses.filters import TransactionFilter
 from expenses.forms import TransactionForm
 from django_htmx.http import retarget
+from django.db.models import Sum
+from django.db.models import Sum
+from django.utils.timezone import now
+from expenses.models import Transaction
 
 
 def index(request):
@@ -79,3 +83,49 @@ def delete_transaction(request, pk):
             'message': f"Transaction of {transaction.amount} on {transaction.date} was deleted successfully!"
     }
     return render(request, 'expenses/partial/transaction-success.html', context)
+
+@login_required
+def transactions_charts(request):
+    transaction_filter = TransactionFilter(
+        request.GET,
+        queryset=Transaction.objects.filter(user=request.user).select_related('category')
+    )
+
+    transactions = transaction_filter.qs
+
+    
+    today = now().date()
+    month_start = today.replace(day=1)
+    current_month_expenses = transactions.filter(date__gte=month_start, type='expense')
+
+    category_data = (
+        current_month_expenses
+        .values('category__name')
+        .annotate(total=Sum('amount'))
+        .order_by('category__name')
+    )
+
+    pie_labels = [entry['category__name'] for entry in category_data]
+    pie_values = [float(entry['total']) for entry in category_data]
+
+   
+    expense_over_time = (
+        transactions.filter(type='expense')
+        .values('date')
+        .annotate(total=Sum('amount'))
+        .order_by('date')
+    )
+
+    line_labels = [entry['date'].strftime('%Y-%m-%d') for entry in expense_over_time]
+    line_values = [float(entry['total']) for entry in expense_over_time]
+
+    context = {
+        'filter': transaction_filter,
+        'pie_labels': pie_labels,
+        'pie_values': pie_values,
+        'line_labels': line_labels,
+        'line_values': line_values,
+    }
+    if request.htmx:
+        return render(request, 'expenses/partial/charts-container.html', context)
+    return render(request, 'expenses/charts.html', context)
