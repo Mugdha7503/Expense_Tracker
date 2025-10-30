@@ -30,7 +30,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'account_logout' %}" 
+                <a href="{% url 'logout' %}" 
                     class="block py-2 pl-3 pr-4 text-white rounded md:p-0" 
                     aria-current="page">
                         Logout
@@ -38,14 +38,14 @@
             </li>
         {% else %}
             <li>
-                <a href="{% url 'account_login' %}" 
+                <a href="{% url 'login' %}" 
                     class="block py-2 pl-3 pr-4 text-white rounded md:p-0" 
                     aria-current="page">
                         Login
                 </a>
             </li>
             <li>
-                <a href="{% url 'account_signup' %}" 
+                <a href="{% url 'signup' %}" 
                     class="block py-2 pl-3 pr-4 text-white rounded md:p-0" 
                     aria-current="page">
                         Sign Up

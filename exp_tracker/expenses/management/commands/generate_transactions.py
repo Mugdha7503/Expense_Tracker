@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fake = Faker()
 
-        # create categories
+        
         categories = [
             "Bills",
             "Food",
@@ -26,10 +26,10 @@ class Command(BaseCommand):
         for category in categories:
             Category.objects.get_or_create(name=category)
 
-        # get the user 
-        user = User.objects.filter(username='track').first()
+    
+        user = User.objects.filter(username='tracker').first()
         if not user:
-            user = User.objects.create_superuser(username='track', password='Tracker@7!')
+            user = User.objects.create_superuser(username='tracker', password='Tracker@7!')
 
         categories = Category.objects.all()
         types = [x[0] for x in Transaction.TRANSACTION_TYPE_CHOICES]

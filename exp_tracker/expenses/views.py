@@ -13,9 +13,9 @@ from expenses.resources import TransactionResource
 from django.http import HttpResponse
 
 
+
 def index(request):
     return render(request, 'expenses/index.html')
-
 
 @login_required
 def transactions_list(request):
@@ -86,6 +86,11 @@ def delete_transaction(request, pk):
     }
     return render(request, 'expenses/partial/transaction-success.html', context)
 
+from django.db.models import Sum
+from django.utils.timezone import now
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
 @login_required
 def transactions_charts(request):
     transaction_filter = TransactionFilter(
@@ -95,29 +100,35 @@ def transactions_charts(request):
 
     transactions = transaction_filter.qs
 
-    
+    # ✅ Get selected type from form (default: 'Expense')
+    selected_type = request.GET.get('transaction_type', 'Expense')
+
     today = now().date()
     month_start = today.replace(day=1)
-    current_month_expenses = transactions.filter(date__gte=month_start, type='expense')
 
+    # ✅ Filter transactions based on selected type & current month
+    current_month_txns = transactions.filter(
+        date__gte=month_start,
+        type__iexact=selected_type  # case-insensitive match (handles Expense/expense)
+    )
+
+    # --- Pie Chart Data ---
     category_data = (
-        current_month_expenses
+        current_month_txns
         .values('category__name')
         .annotate(total=Sum('amount'))
         .order_by('category__name')
     )
-
     pie_labels = [entry['category__name'] for entry in category_data]
     pie_values = [float(entry['total']) for entry in category_data]
 
-   
+    # --- Line Chart Data ---
     expense_over_time = (
-        transactions.filter(type='expense')
+        transactions.filter(type__iexact=selected_type)
         .values('date')
         .annotate(total=Sum('amount'))
         .order_by('date')
     )
-
     line_labels = [entry['date'].strftime('%Y-%m-%d') for entry in expense_over_time]
     line_values = [float(entry['total']) for entry in expense_over_time]
 
@@ -128,9 +139,58 @@ def transactions_charts(request):
         'line_labels': line_labels,
         'line_values': line_values,
     }
+
+    # ✅ Make sure the partial path matches your actual folder
     if request.htmx:
         return render(request, 'expenses/partial/charts-container.html', context)
     return render(request, 'expenses/charts.html', context)
+
+
+# @login_required
+# def transactions_charts(request):
+#     transaction_filter = TransactionFilter(
+#         request.GET,
+#         queryset=Transaction.objects.filter(user=request.user).select_related('category')
+#     )
+
+#     transactions = transaction_filter.qs
+
+    
+#     today = now().date()
+#     month_start = today.replace(day=1)
+#     current_month_expenses = transactions.filter(date__gte=month_start, type='expense')
+
+#     category_data = (
+#         current_month_expenses
+#         .values('category__name')
+#         .annotate(total=Sum('amount'))
+#         .order_by('category__name')
+#     )
+
+#     pie_labels = [entry['category__name'] for entry in category_data]
+#     pie_values = [float(entry['total']) for entry in category_data]
+
+   
+#     expense_over_time = (
+#         transactions.filter(type='expense')
+#         .values('date')
+#         .annotate(total=Sum('amount'))
+#         .order_by('date')
+#     )
+
+#     line_labels = [entry['date'].strftime('%Y-%m-%d') for entry in expense_over_time]
+#     line_values = [float(entry['total']) for entry in expense_over_time]
+
+#     context = {
+#         'filter': transaction_filter,
+#         'pie_labels': pie_labels,
+#         'pie_values': pie_values,
+#         'line_labels': line_labels,
+#         'line_values': line_values,
+#     }
+#     if request.htmx:
+#         return render(request, 'expenses/partial/charts-container.html', context)
+#     return render(request, 'expenses/charts.html', context)
 
 @login_required
 def export(request):

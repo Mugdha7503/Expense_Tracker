@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<section class="flex justify-center items-center py-10">
+  <div class="bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-md">
+    <h1 class="text-2xl text-white font-semibold mb-2">Welcome back</h1>
+    <p class="text-gray-400 mb-6 text-sm">Sign in to continue to Expense Tracker</p>
+
+    {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+      <div class="p-2 rounded {{ message.tags|default:'bg-green-100 text-green-800' }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}" novalidate>
+      {% csrf_token %}
+      <div class="mb-4">
+        <label for="id_username" class="block text-gray-300 text-sm mb-1">Username</label>
+        <input id="id_username" type="text" name="username" autocomplete="username"
+               placeholder="Enter your username"
+               class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+               required>
+      </div>
+      <div class="mb-4">
+        <label for="id_password" class="block text-gray-300 text-sm mb-1">Password</label>
+        <input id="id_password" type="password" name="password" autocomplete="current-password"
+               placeholder="Enter your password"
+               class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+               required>
+      </div>
+      <button type="submit"
+              class="bg-green-500 hover:bg-green-600 w-full py-2.5 rounded text-white font-semibold transition">
+        Sign In
+      </button>
+    </form>
+
+    <p class="text-gray-400 text-sm mt-4 text-center">
+      Don't have an account?
+      <a href="{% url 'signup' %}" class="text-green-400 hover:underline">Create one</a>
+    </p>
+  </div>
+</section>
+{% endblock %}  
