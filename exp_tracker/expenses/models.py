@@ -31,7 +31,7 @@ class TransactionQuerySet(models.QuerySet):
             total=models.Sum('amount')
         )['total'] or 0
     
-# Create your models here.
+
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('income', 'Income'),

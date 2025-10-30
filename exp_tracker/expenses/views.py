@@ -9,6 +9,8 @@ from django.db.models import Sum
 from django.db.models import Sum
 from django.utils.timezone import now
 from expenses.models import Transaction
+from expenses.resources import TransactionResource
+from django.http import HttpResponse
 
 
 def index(request):
@@ -129,3 +131,18 @@ def transactions_charts(request):
     if request.htmx:
         return render(request, 'expenses/partial/charts-container.html', context)
     return render(request, 'expenses/charts.html', context)
+
+@login_required
+def export(request):
+    if request.htmx:
+        return HttpResponse(headers={'HX-Redirect': request.get_full_path()})
+    
+    transaction_filter = TransactionFilter(
+        request.GET,
+        queryset=Transaction.objects.filter(user=request.user).select_related('category')
+    )
+
+    data = TransactionResource().export(transaction_filter.qs)
+    response = HttpResponse(data.csv)
+    response['Content-Disposition'] = 'attachment; filename="transactions.csv"'
+    return response
