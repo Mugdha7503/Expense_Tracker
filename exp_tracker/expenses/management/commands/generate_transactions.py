@@ -41,3 +41,4 @@ class Command(BaseCommand):
                 date=fake.date_between(start_date='-1y', end_date='today'),
                 type=random.choice(types)
             )
+

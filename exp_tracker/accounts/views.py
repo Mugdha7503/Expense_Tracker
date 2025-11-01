@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login as django_login, logout
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 from .forms import SignupForm
 
 def login_view(request):
@@ -9,12 +10,28 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
-            login(request, user)
-            return redirect("transactions-list")  # or your dashboard/home
+            django_login(request, user)
+
+            
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            # (Optional) Store token in session for later use
+            request.session['access_token'] = access_token
+            request.session['refresh_token'] = refresh_token
+
+            # ✅ Redirect to dashboard or transactions page
+            return redirect("transactions-list")
+
         else:
             messages.error(request, "Invalid username or password.")
-    return render(request, "accounts/login.html")  # ✅ Full HTML page
+
+    return render(request, "accounts/login.html")
+
+
 
 
 def signup_view(request):
